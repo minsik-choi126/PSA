@@ -38,11 +38,11 @@ body {
 .publication-title {
   font-family: 'Newsreader', 'Source Serif Pro', 'Times New Roman', serif;
   font-weight: 600;
-  font-size: 3.1rem;
-  line-height: 1.15;
-  letter-spacing: -1px;
+  font-size: 3.8rem;
+  line-height: 1.12;
+  letter-spacing: -1.2px;
   color: var(--ink);
-  margin-bottom: 1.5rem !important;
+  margin-bottom: 1.6rem !important;
 }
 .publication-authors {
   color: #475569;
@@ -337,8 +337,8 @@ body {
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .publication-title {
-    font-size: 2.1rem;
-    letter-spacing: -0.5px;
+    font-size: 2.4rem;
+    letter-spacing: -0.6px;
   }
   .section {
     padding: 2.5rem 1rem;
