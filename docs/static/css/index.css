@@ -39,8 +39,9 @@ body {
   font-family: 'Newsreader', 'Source Serif Pro', 'Times New Roman', serif;
   font-weight: 600;
   font-size: 3.8rem;
-  line-height: 1.12;
-  letter-spacing: -1.2px;
+  line-height: 1.22;
+  letter-spacing: 0.4px;
+  word-spacing: 0.05em;
   color: var(--ink);
   margin-bottom: 1.6rem !important;
 }
@@ -338,7 +339,7 @@ body {
 @media (max-width: 768px) {
   .publication-title {
     font-size: 2.4rem;
-    letter-spacing: -0.6px;
+    letter-spacing: 0.2px;
   }
   .section {
     padding: 2.5rem 1rem;
