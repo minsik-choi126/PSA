@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Policy-Shift-Guided Spectral Alignment (PSA)</title>
+<meta name="description" content="Merging RLVR-Trained Experts via Policy-Shift-Guided Spectral Alignment — preprint, code, and project page.">
+<meta property="og:title" content="Policy-Shift-Guided Spectral Alignment (PSA)">
+<meta property="og:description" content="A retraining-free method for merging RLVR-trained language-model experts.">
+<meta property="og:image" content="static/images/teaser.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@academicons/font@0.1.0/css/academicons.min.css">
+<link rel="stylesheet" href="static/css/index.css">
+</head>
+
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <p class="tag is-warning is-light is-medium" style="margin-bottom:1.25rem;">Pre-release · Preprint</p>
+          <h1 class="title is-2 publication-title">
+            Merging RLVR-Trained Experts via<br>Policy-Shift-Guided Spectral Alignment
+          </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Anonymous Authors</span>
+          </div>
+          <div class="is-size-6 publication-authors" style="margin-top:0.5rem; color:#888;">
+            Under double-blind review
+          </div>
+
+          <div class="publication-links" style="margin-top:1.5rem;">
+            <span class="link-block">
+              <a href="#" class="external-link button is-rounded is-dark is-disabled">
+                <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                <span>Paper</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#" class="external-link button is-rounded is-dark is-disabled">
+                <span class="icon"><i class="ai ai-arxiv"></i></span>
+                <span>arXiv</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="https://anonymous.4open.science/r/PSA" target="_blank" class="external-link button is-rounded is-dark">
+                <span class="icon"><i class="fab fa-github"></i></span>
+                <span>Code (anonymized)</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#bibtex" class="external-link button is-rounded is-dark">
+                <span class="icon"><i class="fas fa-quote-left"></i></span>
+                <span>BibTeX</span>
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section teaser">
+  <div class="container is-max-desktop">
+    <figure class="image">
+      <img src="static/images/teaser.png" alt="PSA overview">
+    </figure>
+    <p class="caption">
+      <b>Figure 1.</b> PSA merges <i>k</i> RLVR-trained experts into a single
+      generalist by guiding spectral subspace selection with token-level
+      expert–base policy shifts.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Abstract</h2>
+    <div class="content has-text-justified">
+      <p>
+        We propose <b>Policy-Shift-Guided Spectral Alignment (PSA)</b>, a
+        retraining-free method for merging RLVR post-trained language-model
+        experts by guiding spectral subspace selection with token-level
+        expert–base policy shifts.
+      </p>
+      <p>
+        We first show that existing SFT-oriented merging techniques
+        under-preserve the sparse, directional changes in next-token
+        probabilities that distinguish RLVR experts from the pretrained base.
+        To address this, PSA scores calibration tokens by expert–base
+        probability difference under the same prefix, and converts
+        probability-shift-weighted input activations into column weights.
+        These weights define a weighted SVD objective that prioritizes update
+        directions active on high-shift tokens. After low-rank truncation, PSA
+        applies cross-expert polar alignment to the truncated task-vector
+        bases and restores each expert's per-layer Frobenius scale before
+        aggregation.
+      </p>
+      <p>
+        Experiments on Qwen2.5-7B and Qwen3-1.7B across three RLVR tasks show
+        that PSA consistently outperforms strong merging baselines while
+        preserving expert-level capabilities in a unified model.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section is-light-bg">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Motivation</h2>
+    <p class="content has-text-justified">
+      RLVR updates concentrate in sparse, directional log-probability shifts at
+      a small set of tokens. Standard SFT-oriented merging methods that operate
+      on global parameter geometry under-preserve these shifts.
+    </p>
+
+    <div class="columns">
+      <div class="column">
+        <figure class="image">
+          <img src="static/images/fig_motivation_kde.png" alt="Token-level |Δlogp| KDE">
+        </figure>
+        <p class="caption"><b>Figure 2a.</b> Distribution of per-token
+          |Δlogp| (expert vs base) on calibration rollouts. RLVR experts
+          concentrate probability shifts on a small fraction of tokens.</p>
+      </div>
+      <div class="column">
+        <figure class="image">
+          <img src="static/images/fig_motivation_tail.png" alt="Tail projection">
+        </figure>
+        <p class="caption"><b>Figure 2b.</b> Tail-token projection percentage
+          across three RLVR tasks (in-domain). Most of the policy shift mass
+          lies outside the SVD top components used by spectral baselines.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Method</h2>
+
+    <div class="content has-text-justified">
+      <p>For every Linear layer ℓ and RLVR expert <i>i</i>:</p>
+      <ol>
+        <li><b>Score calibration tokens</b> by expert–base probability
+          difference: <code>w[t] = |Δlogp[t]|<sup>α</sup></code>.</li>
+        <li><b>Compute column weights</b> by accumulating
+          <code>Σ<sub>t</sub> w[t]·|x[t,c]|</code> via forward hooks on each
+          Linear, then correct by <code>‖W[:,c]‖₂</code> to restore the
+          row/column symmetry of <code>|W·x|</code>.</li>
+        <li><b>Weighted SVD truncation</b>: with the column weighting matrix
+          <code>D<sub>c</sub></code>, decompose
+          <code>τ<sub>i</sub>·D<sub>c</sub><sup>1/2</sup></code> and keep the
+          smallest <code>K<sub>i</sub></code> singular components covering
+          90% of the energy, then unscale.</li>
+        <li><b>Polar alignment</b> across the <i>k</i> retained bases of all
+          experts, with per-expert Frobenius rescaling so each aligned update
+          recovers its pre-truncation norm.</li>
+        <li><b>Aggregate</b>: <code>W<sub>merged</sub> = W<sub>base</sub> +
+          Σ<sub>i</sub> α<sub>i</sub>·τ̃<sub>i</sub></code>.</li>
+      </ol>
+    </div>
+
+    <figure class="image">
+      <img src="static/images/fig_method_colstrip.png" alt="Column weighting visualization">
+    </figure>
+    <p class="caption"><b>Figure 3.</b> PSA column weights versus naive
+      <code>‖W[:,c]‖₂</code> on a tool-RL expert layer. PSA emphasizes columns
+      whose activations align with high-shift tokens.</p>
+  </div>
+</section>
+
+<section class="section is-light-bg">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+
+    <div class="content has-text-justified">
+      <p>
+        We evaluate PSA on two model families. <b>Qwen2.5-7B</b> covers three
+        RLVR tasks — coding, tool-use, long-context memory — across six
+        benchmarks. <b>Qwen3-1.7B</b> covers instruction-following, math
+        (AIME 24/25/26), and search. Best merged result per column is in
+        <b>bold</b>; the highlighted row is PSA. Reference rows are the base
+        model and individual expert checkpoints, included for context.
+      </p>
+    </div>
+
+    <h4 class="title is-5" style="margin-top:1.5rem;">Qwen2.5-7B with 3 RLVR experts</h4>
+    <div class="table-wrap">
+      <table class="results-table">
+        <thead>
+          <tr class="grouphead">
+            <th rowspan="3">Method</th>
+            <th colspan="4">Coding</th>
+            <th colspan="2">Tool Use</th>
+            <th colspan="4">Memory (Recurrent)</th>
+            <th rowspan="3">Avg.</th>
+          </tr>
+          <tr class="grouphead">
+            <th colspan="2">LB</th><th colspan="2">LCB</th>
+            <th>Live</th><th>Non-Live</th>
+            <th colspan="2">HotpotQA</th><th colspan="2">SQuAD</th>
+          </tr>
+          <tr class="subhead">
+            <th>ACC</th><th>UT</th><th>ACC</th><th>UT</th>
+            <th>ACC</th><th>ACC</th>
+            <th>7K</th><th>14K</th><th>32K</th><th>64K</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="rowsec"><td colspan="12"><i>Reference Models</i></td></tr>
+          <tr><td>Base</td>          <td>37.74</td><td>48.63</td><td>28.86</td><td>44.20</td><td>74.02</td><td>86.31</td><td>57.29</td><td>53.65</td><td>65.89</td><td>59.12</td><td>59.67</td></tr>
+          <tr><td>RLVR-Coder</td>    <td>40.92</td><td>52.33</td><td>31.08</td><td>45.84</td><td>73.80</td><td>86.44</td><td>58.33</td><td>52.08</td><td>64.58</td><td>57.81</td><td>60.29</td></tr>
+          <tr><td>RLVR-Tool</td>     <td>36.28</td><td>48.28</td><td>28.50</td><td>43.58</td><td>77.05</td><td>88.06</td><td>60.42</td><td>55.73</td><td>60.68</td><td>62.24</td><td>60.49</td></tr>
+          <tr><td>RLVR-Memory</td>   <td>37.26</td><td>48.66</td><td>29.88</td><td>45.28</td><td>75.50</td><td>86.27</td><td>78.65</td><td>78.65</td><td>76.04</td><td>78.64</td><td>66.38</td></tr>
+
+          <tr class="rowsec"><td colspan="12"><i>Merging Baselines</i></td></tr>
+          <tr><td>Task Arithmetic</td><td>36.72</td><td>48.33</td><td>29.97</td><td>44.62</td><td>77.13</td><td>88.37</td><td>67.45</td><td>60.68</td><td>72.13</td><td>69.53</td><td>63.37</td></tr>
+          <tr><td>TIES</td>          <td>38.09</td><td>49.66</td><td>31.57</td><td>46.35</td><td>76.46</td><td>88.62</td><td>74.74</td><td>75.52</td><td>76.07</td><td>76.27</td><td>66.54</td></tr>
+          <tr><td>DARE</td>          <td>40.23</td><td>51.34</td><td>32.72</td><td>47.62</td><td>73.58</td><td>85.73</td><td>75.78</td><td>76.56</td><td>74.22</td><td>77.34</td><td>66.20</td></tr>
+          <tr><td>TSV</td>           <td>38.74</td><td>50.00</td><td>31.50</td><td>46.55</td><td><b>77.28</b></td><td><b>88.75</b></td><td>75.52</td><td>73.96</td><td>75.17</td><td>73.97</td><td>66.46</td></tr>
+          <tr><td>STAR</td>          <td>39.01</td><td>50.10</td><td>31.65</td><td>46.91</td><td>75.72</td><td>88.23</td><td>75.78</td><td>73.55</td><td>73.44</td><td>74.22</td><td>66.05</td></tr>
+          <tr><td>Iso-CTS</td>       <td>37.89</td><td>48.24</td><td>31.19</td><td>46.12</td><td>77.05</td><td>88.65</td><td>63.28</td><td>62.50</td><td>64.06</td><td>65.62</td><td>62.53</td></tr>
+          <tr><td>RAM</td>           <td>39.26</td><td>50.36</td><td>31.24</td><td>46.79</td><td>76.31</td><td>88.08</td><td>73.70</td><td>76.82</td><td>72.63</td><td>75.52</td><td>66.26</td></tr>
+          <tr><td>RAM+</td>          <td>37.70</td><td>49.89</td><td>31.46</td><td>47.14</td><td>76.09</td><td>88.17</td><td>76.56</td><td>76.56</td><td>74.30</td><td>74.22</td><td>66.36</td></tr>
+
+          <tr class="ours">
+            <td><b>PSA (Ours)</b></td>
+            <td><b>41.13</b></td><td><b>51.94</b></td><td><b>32.75</b></td><td><b>47.85</b></td>
+            <td>76.59</td><td>88.70</td>
+            <td><b>79.95</b></td><td><b>79.43</b></td><td><b>79.43</b></td><td><b>79.95</b></td>
+            <td><b>68.58</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">
+      <b>Table 1.</b> Coding (LB, LCB) reports pass accuracy and unit-test
+      accuracy. Tool Use reports BFCL v4 Live and Non-Live averages. Memory
+      reports RULER HotpotQA and SQuAD at 7K–64K under the Recurrent setting.
+    </p>
+
+    <h4 class="title is-5" style="margin-top:2rem;">Qwen3-1.7B with 3 RLVR experts</h4>
+    <div class="table-wrap">
+      <table class="results-table">
+        <thead>
+          <tr class="grouphead">
+            <th rowspan="3">Method</th>
+            <th>IF</th>
+            <th colspan="3">Math</th>
+            <th>Search</th>
+            <th rowspan="3">Avg.</th>
+          </tr>
+          <tr class="grouphead">
+            <th>IFEval</th>
+            <th>AIME24</th><th>AIME25</th><th>AIME26</th>
+            <th>SimpleQA</th>
+          </tr>
+          <tr class="subhead">
+            <th>ACC</th>
+            <th>mean@8</th><th>mean@8</th><th>mean@8</th>
+            <th>ACC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="rowsec"><td colspan="7"><i>Reference Models</i></td></tr>
+          <tr><td>Base</td>           <td>60.79</td><td>47.50</td><td>36.25</td><td>32.90</td><td>71.28</td><td>56.98</td></tr>
+          <tr><td>IF Expert</td>      <td>64.99</td><td>48.75</td><td>35.83</td><td>35.83</td><td>75.62</td><td>60.25</td></tr>
+          <tr><td>Math Expert</td>    <td>62.47</td><td>54.17</td><td>43.75</td><td>41.67</td><td>71.40</td><td>60.13</td></tr>
+          <tr><td>Search Expert (Lucy)</td><td>64.15</td><td>51.25</td><td>39.58</td><td>36.67</td><td>76.77</td><td>61.14</td></tr>
+
+          <tr class="rowsec"><td colspan="7"><i>Merging Baselines</i></td></tr>
+          <tr><td>Task Arithmetic</td><td>64.39</td><td>51.67</td><td>38.33</td><td>37.50</td><td>76.15</td><td>61.01</td></tr>
+          <tr><td>TIES</td>           <td>64.15</td><td>49.58</td><td>37.06</td><td>40.42</td><td>75.38</td><td>60.63</td></tr>
+          <tr><td>DARE</td>           <td>66.31</td><td>52.08</td><td>38.33</td><td>37.50</td><td>75.54</td><td>61.50</td></tr>
+          <tr><td>TSV</td>            <td>65.23</td><td>53.33</td><td>41.25</td><td>42.08</td><td>75.38</td><td>62.05</td></tr>
+          <tr><td>STAR</td>           <td>65.71</td><td>51.25</td><td>38.75</td><td>38.75</td><td>76.43</td><td>61.69</td></tr>
+          <tr><td>Iso-CTS</td>        <td>64.51</td><td>50.42</td><td>33.33</td><td>39.58</td><td>74.56</td><td>60.06</td></tr>
+          <tr><td>RAM</td>            <td>65.83</td><td>51.67</td><td>37.50</td><td>39.17</td><td>72.37</td><td>60.33</td></tr>
+          <tr><td>RAM+</td>           <td>64.99</td><td>54.17</td><td>40.83</td><td>41.67</td><td>76.03</td><td>62.19</td></tr>
+
+          <tr class="ours">
+            <td><b>PSA (Ours)</b></td>
+            <td><b>67.31</b><span class="std">±0.18</span></td>
+            <td><b>57.08</b><span class="std">±0.42</span></td>
+            <td><b>41.67</b><span class="std">±1.82</span></td>
+            <td><b>43.33</b><span class="std">±0.42</span></td>
+            <td><b>77.46</b><span class="std">±0.39</span></td>
+            <td><b>64.04</b><span class="std">±0.30</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">
+      <b>Table 2.</b> IF and Search report ACC; Math reports mean@8 over
+      AIME24/25/26. Avg. is the mean of IF, Math, and Search scores.
+      PSA scores are averaged over three independent runs (±sample std).
+    </p>
+  </div>
+</section>
+
+<section class="section" id="bibtex">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">BibTeX</h2>
+    <pre><code>@misc{psa2026,
+  title  = {Merging RLVR-Trained Experts via Policy-Shift-Guided Spectral Alignment},
+  author = {(authors)},
+  year   = {2026},
+  note   = {Preprint},
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container is-max-desktop has-text-centered">
+    <p class="is-size-7">
+      Source code released under the MIT License.<br>
+      Page template adapted from
+      <a href="https://github.com/nerfies/nerfies.github.io" target="_blank">Nerfies</a>
+      under CC BY-SA 4.0.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

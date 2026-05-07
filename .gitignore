@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Eval harness — created at runtime
+eval/.eval/
+eval/external/
+eval/results/
+eval/Coding/data/
+eval/MemAgent/hotpotqa/
+eval/Coding/evaluation/__pycache__/
+eval/Coding/evaluation/results/
+eval/Coding/evaluation/temp_data/
+eval/Coding/evaluation/*.txt
+
+# Local user config
+eval/config.env
+eval/models.txt
+
+# Pipeline outputs
+merged_qwen2.5_7b/
+merged_qwen3_1.7b/
+merged_psa/
+W_*.npz
+
+# Model checkpoints (users mount own)
+models/
+
+# Logs
+*.log
+logs/
