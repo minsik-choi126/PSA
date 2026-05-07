@@ -18,7 +18,7 @@ Two variants ship out of the box:
 | variant      | base                       | 3 RLVR experts                |
 |--------------|----------------------------|-------------------------------|
 | Qwen2.5-7B   | `Qwen/Qwen2.5-7B-Instruct` | coding · tool · memory        |
-| Qwen3-1.7B   | `Qwen/Qwen3-1.7B-Base`     | if · math · long-context      |
+| Qwen3-1.7B   | `Qwen/Qwen3-1.7B-Base`     | instruction-following · math · search |
 
 ## Repository structure
 
