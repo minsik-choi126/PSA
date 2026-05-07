@@ -1,0 +1,11 @@
+# Top-level meta-requirements: install everything for both pipeline + eval.
+#
+# Most users only need a subset:
+#   pip install -r pipeline/requirements.txt   # to merge models
+#   pip install -r eval/requirements-eval.txt  # to run benchmarks
+#
+# This file installs both in one shot.
+
+-r pipeline/requirements.txt
+-r eval/requirements-eval.txt
+-r eval/WebSearch/requirements.txt

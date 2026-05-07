@@ -1,0 +1,16 @@
+# PSA — WebSearch evaluation (SimpleQA + BrowseComp via vLLM-served model
+# acting as a tool-use agent through Serper).
+
+# Agent / serving
+openai>=1.99
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=4.9
+
+# Evaluator scaffolding
+jinja2>=3.1
+pandas>=2.0
+numpy>=1.24
+tqdm>=4.66
+
+# vLLM is launched separately — see eval/setup.sh

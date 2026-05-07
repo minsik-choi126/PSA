@@ -1,15 +1,24 @@
 # PSA — Evaluation Harness
 
-One-shot evaluation pipeline for AIME 24/25/26, IFEval, LiveBench,
-LiveCodeBench, BFCL tool-use, and MemAgent RULER — used for RL / model-merging
-experiments. GPU count and model context length are auto-detected; everything
-else is toggled via CLI flags.
+Unified evaluation pipeline used in the PSA paper. Covers eight benchmark
+families through five sub-runners:
+
+| sub-runner       | benchmarks                                  | paper section |
+|------------------|---------------------------------------------|---------------|
+| `eval_scripts/`  | AIME 24 / 25 / 26 (VERL), IFEval            | Qwen3 main    |
+| `Coding/`        | LiveBench (LB), LiveCodeBench (LCB)         | Qwen2.5 main  |
+| `Tool_use/`      | BFCL v4 (Live + Non-Live)                   | Qwen2.5 main  |
+| `MemAgent/`      | RULER HotpotQA / SQuAD (7K–64K, Recurrent)  | Qwen2.5 main  |
+| `WebSearch/`     | SimpleQA, BrowseComp (search-agent setting) | Qwen3 main    |
+
+`run_eval.sh` is the top-level dispatcher. GPU count and model context length
+are auto-detected; everything else is toggled via CLI flags.
 
 ```
  1. Install env   →  bash setup.sh
  2. Prepare data  →  (done by setup.sh; re-run any time with scripts/download_data.py)
  3. Run eval      →  bash run_eval.sh --model <path> --benchmarks <list> [--tp N ...]
- 4. Check results →  ./results/run_NNN/{summary.json, logs/, Coding/, Tool_use/, MemAgent/}
+ 4. Check results →  ./results/run_NNN/{summary.json, logs/, Coding/, Tool_use/, MemAgent/, WebSearch/}
 ```
 
 ---
@@ -84,7 +93,10 @@ Benchmarks:
 | `livecodebench`  | LiveCodeBench                                      |
 | `tool_use`       | BFCL (live + non-live function calling)            |
 | `memagent`       | RULER HQA long-context (7K/14K; add Squad 32K/64K) |
+| `simpleqa`       | SimpleQA short-form factuality (search-agent)      |
+| `browsecomp`     | BrowseComp browse / aggregate (search-agent)       |
 | `coding`         | alias: `livebench + livecodebench`                 |
+| `websearch`      | alias: `simpleqa + browsecomp` (calls `WebSearch/run_eval.sh`) |
 | `all`            | alias: every benchmark above                       |
 
 Manual knobs (override auto-detection):
@@ -129,9 +141,19 @@ done
 # Many models × N repeats for tool_use variance:
 N_RUNS=4 bash run_tool_use_4x.sh --models-file models.txt
 
+# Search benches via WebSearch sub-runner (vLLM-served + SimpleQA grader):
+OPENAI_API_KEY=...  SERPER_API_KEY=...  \
+    bash WebSearch/run_eval.sh --model /path/to/model --benches simpleqa,browsecomp
+
 # First-time user shortcut — run setup inline:
 bash run_eval.sh --auto-setup --model /path/to/model --benchmarks all
 ```
+
+> **WebSearch note.** The search-agent setup (`WebSearch/`) needs an OpenAI key
+> for the grader and a [Serper](https://serper.dev) key for the search tool.
+> Drop them in `WebSearch/.env`. See [`WebSearch/run_eval.sh`](WebSearch/run_eval.sh)
+> for flags. WebSearch is also runnable standalone (vLLM is launched
+> internally per model).
 
 ## 4. Check results
 

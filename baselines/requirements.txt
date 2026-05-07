@@ -1,0 +1,2 @@
+# merge_baseline.py shares the pipeline's environment.
+-r ../pipeline/requirements.txt

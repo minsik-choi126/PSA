@@ -1,0 +1,14 @@
+# PSA pipeline (extract_w → apply_wnorm → merge → gen_per_query) requirements.
+# CPU/GPU torch is required; install the variant matching your CUDA version
+# from https://pytorch.org/get-started/locally/
+
+torch>=2.1
+numpy>=1.24
+tqdm>=4.66
+transformers>=4.42
+safetensors>=0.4
+huggingface_hub>=0.24
+
+# gen_per_query.py only — chat-template prompt rendering for proxy data.
+# (Skip if you ship pre-built per_query npz files.)
+jinja2>=3.1

@@ -72,9 +72,13 @@
       <img src="static/images/teaser.png" alt="PSA overview">
     </figure>
     <p class="caption">
-      <b>Figure 1.</b> PSA merges <i>k</i> RLVR-trained experts into a single
-      generalist by guiding spectral subspace selection with token-level
-      expert–base policy shifts.
+      <b>Figure 1.</b> PSA pipeline. PSA scores rollout tokens by the
+      expert-vs-base absolute log-probability difference |Δ<sub>i</sub>(h)|,
+      converts shift-weighted layer-wise input activations into diagonal
+      column weights <i>D<sub>i,ℓ</sub></i>, then performs a column-scaled
+      truncated SVD that prioritizes directions active on high-shift tokens.
+      The retained bases are polar-aligned across experts, and Frobenius
+      rescaling restores each expert's pre-truncation scale before aggregation.
     </p>
   </div>
 </section>
@@ -115,27 +119,34 @@
   <div class="container is-max-desktop">
     <h2 class="title is-3 has-text-centered">Motivation</h2>
     <p class="content has-text-justified">
-      RLVR updates concentrate in sparse, directional log-probability shifts at
-      a small set of tokens. Standard SFT-oriented merging methods that operate
-      on global parameter geometry under-preserve these shifts.
+      RLVR updates concentrate in sparse, directional next-token-probability
+      shifts. SFT-oriented merging methods—both coordinate-wise (TA, TIES,
+      DARE) and spectral (TSV, STAR, Iso-CTS)—select what to keep using
+      <i>global</i> parameter geometry, so the merged model fails to retain
+      these expert-specific shifts.
     </p>
 
     <div class="columns">
       <div class="column">
         <figure class="image">
-          <img src="static/images/fig_motivation_kde.png" alt="Token-level |Δlogp| KDE">
+          <img src="static/images/fig_motivation_kde.png" alt="Token-level |Δ_i(h)| KDE">
         </figure>
-        <p class="caption"><b>Figure 2a.</b> Distribution of per-token
-          |Δlogp| (expert vs base) on calibration rollouts. RLVR experts
-          concentrate probability shifts on a small fraction of tokens.</p>
+        <p class="caption"><b>Figure 2.</b> Kernel-density estimate of
+          |Δ<sub>i</sub>(h)| over the top 5% of tokens ranked by expert-vs-base
+          absolute log-probability difference, for three RLVR tasks
+          (memory, tool, coding). The expert produces large shifts on these
+          positions; existing merged models stay near zero, indicating loss of
+          token-level expert behavior.</p>
       </div>
       <div class="column">
         <figure class="image">
-          <img src="static/images/fig_motivation_tail.png" alt="Tail projection">
+          <img src="static/images/fig_motivation_tail.png" alt="Tail-direction activation projection">
         </figure>
-        <p class="caption"><b>Figure 2b.</b> Tail-token projection percentage
-          across three RLVR tasks (in-domain). Most of the policy shift mass
-          lies outside the SVD top components used by spectral baselines.</p>
+        <p class="caption"><b>Figure 2 (cont.).</b> Per-task projection of
+          high-shift-token activations onto the <i>tail</i> singular subspace
+          of the task vector. A non-trivial fraction of the policy-shift signal
+          lies outside the top components retained by unweighted SVD,
+          motivating a column-weighted truncation criterion.</p>
       </div>
     </div>
   </div>
@@ -146,33 +157,52 @@
     <h2 class="title is-3 has-text-centered">Method</h2>
 
     <div class="content has-text-justified">
-      <p>For every Linear layer ℓ and RLVR expert <i>i</i>:</p>
+      <p>
+        For each layer ℓ and expert <i>i</i>, with task vector
+        <code>τ<sub>i</sub><sup>(ℓ)</sup> = W<sub>i</sub><sup>(ℓ)</sup> − W<sub>pre</sub><sup>(ℓ)</sup></code>,
+        PSA proceeds in three stages:
+      </p>
       <ol>
-        <li><b>Score calibration tokens</b> by expert–base probability
-          difference: <code>w[t] = |Δlogp[t]|<sup>α</sup></code>.</li>
-        <li><b>Compute column weights</b> by accumulating
-          <code>Σ<sub>t</sub> w[t]·|x[t,c]|</code> via forward hooks on each
-          Linear, then correct by <code>‖W[:,c]‖₂</code> to restore the
-          row/column symmetry of <code>|W·x|</code>.</li>
-        <li><b>Weighted SVD truncation</b>: with the column weighting matrix
-          <code>D<sub>c</sub></code>, decompose
-          <code>τ<sub>i</sub>·D<sub>c</sub><sup>1/2</sup></code> and keep the
-          smallest <code>K<sub>i</sub></code> singular components covering
-          90% of the energy, then unscale.</li>
-        <li><b>Polar alignment</b> across the <i>k</i> retained bases of all
-          experts, with per-expert Frobenius rescaling so each aligned update
-          recovers its pre-truncation norm.</li>
-        <li><b>Aggregate</b>: <code>W<sub>merged</sub> = W<sub>base</sub> +
-          Σ<sub>i</sub> α<sub>i</sub>·τ̃<sub>i</sub></code>.</li>
+        <li>
+          <b>Probability-shift-weighted column importance.</b>
+          On shared base-generated rollouts, score each token <i>h</i> by
+          <code>α<sub>i</sub>(h) = |Δ<sub>i</sub>(h)|</code>, the absolute
+          expert-vs-base log-probability difference under the same prefix.
+          For each Linear, define column weights as the shift-weighted average
+          of input-activation magnitudes,
+          <code>ω<sub>i,ℓ</sub>[c] = Σ<sub>h</sub> α<sub>i</sub>(h)·|z<sub>i,ℓ</sub>(h)[c]| ⁄ Σ<sub>h</sub> α<sub>i</sub>(h)</code>,
+          then median/ε-stabilize to obtain
+          <code>D<sub>i,ℓ</sub> = diag(ω̃<sub>i,ℓ</sub>)</code>.
+        </li>
+        <li>
+          <b>Column-metric low-rank approximation (CM-SVD).</b>
+          Solve the column-weighted truncation
+          <code>argmin<sub>rank(τ̂)≤k</sub> ‖(τ<sub>i</sub><sup>(ℓ)</sup> − τ̂)·D<sub>i,ℓ</sub><sup>1/2</sup>‖<sub>F</sub><sup>2</sup></code>
+          via truncated SVD in the column-scaled space (Theorem 1 — closed-form
+          via right-scaling, ordinary SVD, then unscale). The retained
+          subspace maximizes <i>shift-weighted</i> column projection energy
+          rather than unweighted parameter energy.
+        </li>
+        <li>
+          <b>Polar alignment + Frobenius renormalization.</b>
+          Concatenate the truncated bases across experts and project with the
+          polar map (nearest column-orthonormal matrix) to make different
+          experts' aligned updates mutually orthogonal. Then restore each
+          expert's per-layer norm with
+          <code>β<sub>i</sub><sup>(ℓ)</sup> = ‖τ<sub>i</sub><sup>(ℓ)</sup>‖<sub>F</sub> / ‖τ<sub>align,i</sub><sup>(ℓ)</sup>‖<sub>F</sub></code>
+          before aggregation:
+          <code>W<sub>merged</sub><sup>(ℓ)</sup> = W<sub>pre</sub><sup>(ℓ)</sup> + Σ<sub>i</sub> β<sub>i</sub><sup>(ℓ)</sup>·τ<sub>align,i</sub><sup>(ℓ)</sup></code>.
+        </li>
       </ol>
     </div>
 
     <figure class="image">
-      <img src="static/images/fig_method_colstrip.png" alt="Column weighting visualization">
+      <img src="static/images/fig_method_colstrip.png" alt="Column weights visualization">
     </figure>
-    <p class="caption"><b>Figure 3.</b> PSA column weights versus naive
-      <code>‖W[:,c]‖₂</code> on a tool-RL expert layer. PSA emphasizes columns
-      whose activations align with high-shift tokens.</p>
+    <p class="caption"><b>Figure 3.</b> Per-column weights on a tool-RL
+      expert layer: PSA's shift-weighted weights minus the W-norm baseline.
+      PSA emphasizes columns whose activations align with high-shift tokens
+      rather than columns with large pretrained-weight magnitude alone.</p>
   </div>
 </section>
 
@@ -182,12 +212,16 @@
 
     <div class="content has-text-justified">
       <p>
-        We evaluate PSA on two model families. <b>Qwen2.5-7B</b> covers three
-        RLVR tasks — coding, tool-use, long-context memory — across six
-        benchmarks. <b>Qwen3-1.7B</b> covers instruction-following, math
-        (AIME 24/25/26), and search. Best merged result per column is in
-        <b>bold</b>; the highlighted row is PSA. Reference rows are the base
-        model and individual expert checkpoints, included for context.
+        We evaluate PSA on two model families. On <b>Qwen2.5-7B</b>, the three
+        RLVR experts are CURE (coding), ToolRL (tool use), and MemAgent
+        (long-context memory), evaluated on LiveBench, LiveCodeBench, BFCL v4,
+        and RULER (HotpotQA / SQuAD, 7K–64K, Recurrent setting). On
+        <b>Qwen3-1.7B</b>, the three experts cover instruction following
+        (custom RL on Qwen3-Base), math (custom RL), and search (Lucy),
+        evaluated on IFEval, AIME 24/25/26 (mean@8), and SimpleQA.
+        Best merged result per column is in <b>bold</b>; the highlighted row
+        is PSA. Reference rows are the base model and individual expert
+        checkpoints, included for context.
       </p>
     </div>
 
