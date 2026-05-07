@@ -1,12 +1,13 @@
-/* PSA project page — minimal Nerfies-flavored academic style */
+/* PSA project page — modern academic style */
 
 :root {
   --ink: #1a1a1a;
   --text: #334155;
   --muted: #64748b;
   --line: #e5e7eb;
-  --bg: #ffffff;
-  --bg-alt: #f8fafc;
+  --bg: #fafaf6;
+  --bg-card: #ffffff;
+  --bg-alt: #f1eee6;
   --accent: #c2410c;
   --accent-bg: #fff7ed;
   --accent-line: #fb923c;
@@ -31,17 +32,17 @@ body {
 /* HERO */
 .hero {
   background: var(--bg);
-  padding-top: 4rem;
-  padding-bottom: 0.5rem;
+  padding-top: 4.5rem;
+  padding-bottom: 1rem;
 }
 .publication-title {
-  font-family: 'Castoro', 'Times New Roman', serif;
-  font-weight: 400;
-  font-size: 2.4rem;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
+  font-family: 'Newsreader', 'Source Serif Pro', 'Times New Roman', serif;
+  font-weight: 600;
+  font-size: 3.1rem;
+  line-height: 1.15;
+  letter-spacing: -1px;
   color: var(--ink);
-  margin-bottom: 1.25rem !important;
+  margin-bottom: 1.5rem !important;
 }
 .publication-authors {
   color: #475569;
@@ -57,12 +58,11 @@ body {
   font-weight: 400;
 }
 .preprint-tag {
-  margin-bottom: 1.25rem !important;
+  margin-bottom: 1.4rem !important;
 }
 .publication-links {
-  margin-top: 1.75rem;
+  margin-top: 1.85rem;
 }
-
 .publication-links .button {
   margin: 0.3rem;
   font-weight: 500;
@@ -83,22 +83,23 @@ body {
   pointer-events: none;
 }
 
-/* SECTIONS */
+/* SECTIONS — body has a soft warm tone, alternating bg gives rhythm */
 .section {
   padding: 3.5rem 1.5rem;
+  background: var(--bg);
 }
 .section.is-light-bg {
   background: var(--bg-alt);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid #e7e1d3;
+  border-bottom: 1px solid #e7e1d3;
 }
 .section .title.is-3 {
-  font-family: 'Castoro', 'Times New Roman', serif;
-  font-weight: 400;
-  font-size: 1.85rem;
-  letter-spacing: -0.3px;
+  font-family: 'Newsreader', 'Source Serif Pro', 'Times New Roman', serif;
+  font-weight: 600;
+  font-size: 2rem;
+  letter-spacing: -0.4px;
   color: var(--ink);
-  margin-bottom: 1.75rem !important;
+  margin-bottom: 1.85rem !important;
 }
 .section .title.is-5 {
   font-family: 'Inter', sans-serif;
@@ -114,11 +115,14 @@ body {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
 }
+.teaser figure {
+  margin: 0;
+}
 .teaser figure img {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--bg-card);
 }
 
 /* CAPTIONS */
@@ -126,7 +130,7 @@ body {
   text-align: center;
   font-size: 0.88rem;
   color: var(--muted);
-  margin-top: 0.85rem;
+  margin-top: 1rem;
   margin-bottom: 0;
   padding: 0 1rem;
   line-height: 1.55;
@@ -136,21 +140,21 @@ body {
   font-weight: 600;
 }
 
-/* FIGURES */
+/* FIGURES IN COLUMNS */
 .columns .column figure img {
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: var(--bg);
+  background: var(--bg-card);
 }
 
 /* CONTENT TEXT */
 .content {
-  font-size: 1.02rem;
-  line-height: 1.7;
+  font-size: 1.05rem;
+  line-height: 1.75;
   color: var(--text);
 }
 .content p {
-  margin-bottom: 1rem;
+  margin-bottom: 1.05rem;
 }
 .content code {
   font-family: 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
@@ -160,14 +164,41 @@ body {
   padding: 0.12em 0.4em;
   border-radius: 3px;
   border: 1px solid #e2e8f0;
-  white-space: nowrap;
 }
-.content ol li {
-  margin-bottom: 0.85rem;
-  padding-left: 0.25rem;
+.content ol.stages {
+  list-style: none;
+  counter-reset: stage;
+  padding-left: 0;
+  margin-top: 1.5rem;
 }
-.content ol li b:first-child {
+.content ol.stages > li {
+  counter-increment: stage;
+  position: relative;
+  padding: 0.85rem 0 0.85rem 3.2rem;
+  margin-bottom: 1.1rem;
+  border-left: 2px solid var(--accent-line);
+  background: linear-gradient(90deg, #fff5eb 0%, transparent 60%);
+  border-radius: 0 6px 6px 0;
+}
+.content ol.stages > li::before {
+  content: "Stage " counter(stage);
+  position: absolute;
+  left: 0.7rem;
+  top: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--accent);
+  width: 2.4rem;
+}
+.content ol.stages > li b:first-child {
+  display: block;
   color: var(--ink);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  margin-top: 0.05rem;
 }
 
 /* BIBTEX */
@@ -181,14 +212,14 @@ body {
   line-height: 1.55;
   overflow-x: auto;
   border: 0;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
 }
 
 /* FOOTER */
 .footer {
   background: var(--bg-alt);
   padding: 2.5rem 1.5rem;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid #e7e1d3;
 }
 .footer p {
   color: var(--muted);
@@ -223,7 +254,7 @@ body {
   margin: 1rem 0 0.5rem 0;
   border-radius: 8px;
   border: 1px solid var(--line);
-  background: var(--bg);
+  background: var(--bg-card);
 }
 .results-table {
   width: 100%;
@@ -266,7 +297,7 @@ body {
   padding-right: 1rem;
 }
 .results-table tbody tr:hover td {
-  background: #f8fafc;
+  background: #fafbfc;
 }
 .results-table tr.rowsec td {
   background: #f1f5f9;
@@ -306,15 +337,24 @@ body {
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .publication-title {
-    font-size: 1.7rem;
+    font-size: 2.1rem;
+    letter-spacing: -0.5px;
   }
   .section {
     padding: 2.5rem 1rem;
   }
   .section .title.is-3 {
-    font-size: 1.5rem;
+    font-size: 1.55rem;
   }
   .columns {
     margin: 0 !important;
+  }
+  .content ol.stages > li {
+    padding-left: 1rem;
+    padding-top: 2.2rem;
+  }
+  .content ol.stages > li::before {
+    top: 0.7rem;
+    left: 1rem;
   }
 }
