@@ -47,7 +47,7 @@ PSA/pipeline/
 ├── helpers.py                 # shared model I/O
 ├── extract_w.py               # Step 1 — abs+soft W_col (DP=N)
 ├── apply_wnorm.py             # Step 2 — ‖W[:,c]‖₂ correction
-├── merge.py                   # Step 3 — PSA (KT-col + polar + per-expert renorm) (1 GPU)
+├── merge.py                   # Step 3 — PSA merge: column-weighted SVD + polar + renorm (1 GPU)
 ├── gen_per_query.py           # Pre-step — chat prompts → per_query npz (rollout + score)
 ├── data/
 │   ├── qwen2.5_7b/

@@ -77,7 +77,7 @@ bash eval/run_eval.sh --model ./merged_qwen2.5_7b --benchmarks all
 ```bibtex
 @misc{psa2026,
   title  = {Merging RLVR-Trained Experts via Policy-Shift-Guided Spectral Alignment},
-  author = {(authors)},
+  author = {Anonymous Authors},
   year   = {2026},
   note   = {Preprint},
 }

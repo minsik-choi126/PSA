@@ -26,7 +26,7 @@ are auto-detected; everything else is toggled via CLI flags.
 ## 1. Install environment
 
 ```bash
-git clone https://github.com/<your-org>/PSA.git
+git clone https://github.com/minsik-choi126/PSA.git
 cd PSA/eval
 bash setup.sh
 ```
@@ -93,11 +93,13 @@ Benchmarks:
 | `livecodebench`  | LiveCodeBench                                      |
 | `tool_use`       | BFCL (live + non-live function calling)            |
 | `memagent`       | RULER HQA long-context (7K/14K; add Squad 32K/64K) |
-| `simpleqa`       | SimpleQA short-form factuality (search-agent)      |
-| `browsecomp`     | BrowseComp browse / aggregate (search-agent)       |
 | `coding`         | alias: `livebench + livecodebench`                 |
-| `websearch`      | alias: `simpleqa + browsecomp` (calls `WebSearch/run_eval.sh`) |
 | `all`            | alias: every benchmark above                       |
+
+The search-agent benches (SimpleQA, BrowseComp) are *not* part of the unified
+`run_eval.sh` dispatch — they require external API keys (OpenAI grader,
+Serper search) and a different inference path (vLLM-served agent loop). Run
+them through the standalone `WebSearch/` sub-runner instead (see below).
 
 Manual knobs (override auto-detection):
 
@@ -187,7 +189,7 @@ done and the data files are in place.
 
 ```bash
 # (common step 1 — once)
-git clone https://github.com/<your-org>/PSA.git
+git clone https://github.com/minsik-choi126/PSA.git
 cd PSA/eval
 bash setup.sh
 MODEL=/abs/path/to/Qwen3-1.7B     # <— replace with your 1.7B checkpoint
